@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Student management</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<!--    <link rel="stylesheet" href="/resource/css/bootstrap.css">-->
+<!--    <link rel="stylesheet" href="/resource/font-awesome-4.7.0/css/font-awesome.min.css">-->
+<!--    <link rel="stylesheet" href="/resource/css/sweetalert2.min.css">-->
+<!--    <script type="text/javascript" src="/resource/js/sweetalert2.min.js"></script>-->
+<!--    <script type="text/javascript" src="/resource/js/jquery-3.6.0.min.js"></script>-->
+<!--    <script type="text/javascript" src="/resource/js/jquery.validate-1.19.3.min.js"></script>-->
+<!--    <script type="text/javascript" src="/resource/js/bootstrap.bundle.min.js"></script>-->
+<!--    <link rel="stylesheet" href="/resource/css/style.css">-->
+<!--    <script type="text/javascript" src="/resource/js/app.js"></script>-->
+
+    <link rel="stylesheet" href="/resource/css/bootstrap.css">
+    <link rel="stylesheet" href="/resource/font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/resource/css/sweetalert2.min.css">
+    <script type="text/javascript" src="/resource/js/sweetalert2.min.js"></script>
+    <script type="text/javascript" src="/resource/js/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="/resource/js/jquery.validate-1.19.3.min.js"></script>
+    <script type="text/javascript" src="/resource/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="/resource/css/style.css">
+    <script type="text/javascript" src="/resource/js/app.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="success-alert">
+
+    </div>
+    <div class="box-header">
+        <th:block th:replace="/student/createForm :: frm-create"></th:block>
+    </div>
+    <div class="box-body">
+        <textarea style="display: none" id="template">
+            <tr id="tr_{0}">
+                <td>{0}</td>
+                <td><a href="/student?action=view&id={0}">{1}</a></td>
+                <td>{2}</td>
+                <td>{3}</td>
+                <td>{4}</td>
+                <td>{5}</td>
+                <td>{6}</td>
+                <td>{7}</td>
+                <td>
+                    <a class="edit" data-id="{0}">
+                        <i class="fa fa-pencil-square-o fa-fw"></i>
+                        edit
+                    </a>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-outline-danger delete" data-id="{0}">
+                        <i class="fa fa-trash-o"></i>
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        </textarea>
+        <input type="hidden" id="currentRow"/>
+        <table id="orderItems" class="table table-hover" border="1">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>FullName</th>
+                <th>DateOfBirth</th>
+                <th>ProvinceBirth</th>
+                <th>IdCard</th>
+                <th>TelephoneNumbers</th>
+                <th>Email</th>
+                <th>Address</th>
+                <th></th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<th:block th:replace="/student/updateForm :: frm-update"></th:block>
+
+<script type="text/javascript" src="/resource/js/student-validation.js"></script>
+
+<script>
+    let page = {
+        urls: {
+            getAllStudents: App.BASE_URL_STUDENT,
+            getAllProvinceBirths: App.BASE_URL_PROVINCE_BIRTH,
+            getStudent: App.BASE_URL_STUDENT + '/view/',
+            saveNew: App.BASE_URL_STUDENT,
+            saveEdit: App.BASE_URL_STUDENT,
+            deleteStudent: App.BASE_URL_STUDENT
+        }
+    }
+
+    let student = new Student();
+    let template = jQuery.validator.format($.trim($("#template").val()));
+
+    let addRow = () => {
+        $("#orderItems tbody").prepend($(template(student.id, student.fullName, student.dateOfBirth, student.provinceBirth.name, student.idCard, student.telephoneNumbers, student.email, student.address)));
+    }
+
+    function getProvinceBirths() {
+        $.ajax({
+            type: "GET",
+            url: page.urls.getAllProvinceBirths,
+        }).done((data) => {
+            $('#frmCreateStudent').find('select').empty();
+            $('#frmUpdateStudent').find('select').empty();
+            $.each(data, (i, item) => {
+                $('#frmCreateStudent').find('select').append(`<option value="${item.id}">${item.name}</option>`);
+                $('#frmUpdateStudent').find('select').append(`<option value="${item.id}">${item.name}</option>`);
+            });
+        }).fail(function() {
+            App.showErrorAlert("An error occurred. Please try again later !");
+        });
+    }
+
+    function getStudents() {
+        $.ajax({
+            type: "GET",
+            url: page.urls.getAllStudents,
+        }).done((data) => {
+            $.each(data, (i, item) => {
+                student = item;
+                addRow();
+            });
+        }).fail(function() {
+            App.showErrorAlert("An error occurred. Please try again later !");
+        });
+    }
+
+    function createStudent() {
+        student.fullName = $("#fullName").val();
+        student.dateOfBirth = $("#dateOfBirth").val();
+        student.provinceBirth = { "id": $("#provinceBirth").val() };
+        student.idCard = $("#idCard").val();
+        student.telephoneNumbers = $("#telephoneNumbers").val();
+        student.email = $("#email").val();
+        student.address = $("#address").val();
+        delete student.id;
+
+        $.ajax({
+            type: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            url: page.urls.saveNew,
+            data: JSON.stringify(student)
+        }).done((resp) => {
+            student = resp;
+            addRow();
+            $('#frmCreateStudent')[0].reset();
+            $("#frmCreateStudent").validate().resetForm();
+            App.showSuccessAlert("Successful data generation !");
+        }).fail(function() {
+            App.showErrorAlert("Lỗi Đăng Ký !");
+        });
+    }
+
+    function showUpdateModal() {
+        $.ajax({
+            type: "GET",
+            url: page.urls.getStudent + student.id,
+            // data: { id: student.id },
+        }).done((resp) => {
+            assignUpdateModal(resp);
+        }).fail(function() {
+            App.showErrorAlert("An error occurred. Please try again later !");
+        });
+    }
+
+    function assignUpdateModal(s) {
+        $("#upFullName").val(s.fullName);
+        $("#upDateOfBirth").val(s.dateOfBirth);
+        $("#upProvinceBirth").val(s.provinceBirth.id);
+        $("#upIdCard").val(s.idCard);
+        $("#upTelephoneNumbers").val(s.telephoneNumbers);
+        $("#upEmail").val(s.email);
+        $("#upAddress").val(s.address);
+        $('#updateModal').modal('toggle');
+    }
+
+    function updateStudent() {
+        student.fullName = $("#upFullName").val();
+        student.dateOfBirth = $("#upDateOfBirth").val();
+        student.provinceBirth = { "id": $("#upProvinceBirth").val() };
+        student.idCard = $("#upIdCard").val();
+        student.telephoneNumbers = $("#upTelephoneNumbers").val();
+        student.email = $("#upEmail").val();
+        student.address = $("#upAddress").val();
+
+        $.ajax({
+            type: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            url: page.urls.saveEdit,
+            data: JSON.stringify(student)
+        }).done( (resp) => {
+            student = resp;
+            let row = $("#orderItems tbody").find('#' + $("#currentRow").val());
+            let updated_row = $(template(student.id, student.fullName, student.dateOfBirth, student.provinceBirth.name, student.idCard, student.telephoneNumbers, student.email, student.address));
+            row.replaceWith(updated_row);
+            $("#currentRow").val("");
+            $('#frmUpdateStudent')[0].reset();
+            $("#frmUpdateStudent").validate().resetForm();
+
+            App.showSuccessAlert("Data update successful !");
+        }).fail( () => {
+            App.showErrorAlert("An error occurred. Please try again later !");
+        });
+
+        $("#updateModal").modal('hide');
+    }
+
+    function deleteConfirm() {
+        App.showDeleteConfirmDialog()
+            .then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        type: "DELETE",
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        // url: page.urls.deleteStudent + "/" + student.id,
+                        url: page.urls.deleteStudent,
+                        data : JSON.stringify({
+                            id : student.id,
+                        }),
+                        success() {
+                            App.showSuccessAlert("Delete data successfully!");
+                            $("#tr_" + student.id).remove();
+                        },
+                        error() {
+                            App.showErrorAlert("An error occurred. Please try again later!");
+                        }
+                    });
+                }
+            });
+    }
+
+    $("#btnCreateStudent").on("click", () => {
+        $("#frmCreateStudent").submit();
+        // createStudent();
+    });
+
+    $("#btnUpdateStudent").on("click", () => {
+        $("#frmUpdateStudent").submit();
+        // updateStudent();
+    });
+
+    $("#orderItems").on("click", ".edit", function () {
+        student.id = $(this).data('id');
+        $("#currentRow").val($(this).closest("tr").attr("id"));
+        showUpdateModal();
+    });
+
+    $("#orderItems").on("click", ".delete", function () {
+        student.id = $(this).data('id');
+        deleteConfirm();
+    });
+
+    $('#updateModal').on('hidden.bs.modal', function () {
+        $('#frmUpdateStudent')[0].reset();
+        $('#frmUpdateStudent').validate().resetForm();
+    });
+
+    $(() => {
+        getStudents();
+        getProvinceBirths();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="frm-update">
+    <div id="updateModal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Student information</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="frmUpdateStudent">
+                        <fieldset class="row g-3">
+                            <div class="col-md-6">
+                                <label for="upFullName" class="form-label">Full name</label>
+                                <input type="text" class="form-control" id="upFullName" name="upFullName">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="upDateOfBirth" class="form-label">Date Of Birth</label>
+                                <input type="text" class="form-control" id="upDateOfBirth" name="upDateOfBirth">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="upProvinceBirth" class="form-label">Province Birth</label>
+                                <select id="upProvinceBirth" class="form-select"></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="upIdCard" class="form-label">Id Card</label>
+                                <input type="number" class="form-control" id="upIdCard" name="upIdCard">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="upTelephoneNumbers" class="form-label">Telephone Numbers</label>
+                                <input type="tel" class="form-control" id="upTelephoneNumbers" name="upTelephoneNumbers">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="upEmail" class="form-label">Email</label>
+                                <input type="text" class="form-control" id="upEmail" name="upEmail">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="upAddress" class="form-label">Address</label>
+                                <input type="text" class="form-control" id="upAddress" name="upAddress">
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" id="btnUpdateStudent" class="btn btn-outline-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
